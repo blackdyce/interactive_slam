@@ -4,6 +4,7 @@
 #include <boost/filesystem.hpp>
 
 #include <g2o/core/factory.h>
+#include <g2o/core/hyper_graph.h>
 #include <g2o/core/robust_kernel_impl.h>
 #include <g2o/core/sparse_optimizer.h>
 #include <g2o/types/slam3d/edge_se3.h>
@@ -22,6 +23,8 @@
 #include <hdl_graph_slam/information_matrix_calculator.hpp>
 
 namespace hdl_graph_slam {
+  static const Eigen::Vector4f KF_COLOR_MAIN  = {1, 0, 0, 1};
+  static const Eigen::Vector4f KF_COLOR_MERGED = {1, 1, 0, 1};
 
 InteractiveGraph::InteractiveGraph() : GraphSLAM("lm_var_cholmod"), iterations(0), chi2_before(0.0), chi2_after(0.0), elapsed_time_msec(0.0) {
   inf_calclator.reset(new InformationMatrixCalculator());
@@ -40,6 +43,9 @@ InteractiveGraph::~InteractiveGraph() {
 }
 
 bool InteractiveGraph::load_map_data(const std::string& directory, guik::ProgressInterface& progress) {
+
+  gpsVertices.clear();
+
   // load graph file
   progress.set_title("Opening " + directory);
   progress.set_text("loading graph");
@@ -66,10 +72,26 @@ bool InteractiveGraph::load_map_data(const std::string& directory, guik::Progres
     return false;
   }
 
+  std::ifstream gpsVerticesFile(directory + "/gps_vertices.txt");
+
+  if (gpsVerticesFile.is_open())
+  {
+      long vertexId = -1;
+
+      while (gpsVerticesFile >> vertexId)
+      {
+          gpsVertices[vertexId] = true;
+      }
+      gpsVerticesFile.close();
+  }
+
+  std::cout << "Gps vertices on the graph: " << gpsVertices.size() << std::endl;
+
   return true;
 }
 
-bool InteractiveGraph::merge_map_data(InteractiveGraph& graph_, const InteractiveKeyFrame::Ptr& key1, const InteractiveKeyFrame::Ptr& key2, const Eigen::Isometry3d& relative_pose) {
+bool InteractiveGraph::merge_map_data(InteractiveGraph& graph_, const InteractiveKeyFrame::Ptr& key1, 
+  const InteractiveKeyFrame::Ptr& key2, const Eigen::Isometry3d& relative_pose) {
   long max_vertex_id = 0;
   long max_edge_id = 0;
 
@@ -109,6 +131,11 @@ bool InteractiveGraph::merge_map_data(InteractiveGraph& graph_, const Interactiv
     new_v->setFixed(v->fixed());
     new_v->setId(new_vertex_id);
     graph->addVertex(new_v);
+
+    if (graph_.gpsVertices.find(vertex.first) != graph_.gpsVertices.end())
+    {
+      gpsVertices[new_v->id()] = graph_.gpsVertices[vertex.first];
+    }
 
     // for remapping
     new_vertices_map[v->id()] = new_v;
@@ -161,10 +188,14 @@ bool InteractiveGraph::merge_map_data(InteractiveGraph& graph_, const Interactiv
   // copy keyframes
   for(const auto& keyframe : graph_.keyframes) {
     keyframe.second->node = dynamic_cast<g2o::VertexSE3*>(new_vertices_map[keyframe.second->id()]);
-    std::cout << "keyframe_id:" << keyframe.second->node->id() << std::endl;
     assert(keyframe.second->node);
+    keyframe.second->color = KF_COLOR_MERGED;
     keyframes[keyframe.second->id()] = keyframe.second;
   }
+
+  auto gpsVerticesCount = std::count_if(gpsVertices.begin(), gpsVertices.end(), [](const std::pair<long, bool> &p) { return p.second; });
+
+  std::cout << "Gps vertices on the mrged graph: " << gpsVertices.size() << std::endl;
 
   return true;
 }
@@ -265,6 +296,7 @@ bool InteractiveGraph::load_keyframes(const std::string& directory, guik::Progre
       std::cerr << "error : failed to load keyframe!!" << std::endl;
       std::cerr << "      : " << keyframe_dir << std::endl;
     } else {
+      keyframe->color = KF_COLOR_MAIN;
       keyframes[keyframe->id()] = keyframe;
       progress.increment();
     }
@@ -279,6 +311,23 @@ long InteractiveGraph::anchor_node_id() const {
 
 g2o::EdgeSE3* InteractiveGraph::add_edge(const KeyFrame::Ptr& key1, const KeyFrame::Ptr& key2, const Eigen::Isometry3d& relative_pose, const std::string& robust_kernel, double robust_kernel_delta) {
   Eigen::MatrixXd inf = inf_calclator->calc_information_matrix(key1->cloud, key2->cloud, relative_pose);
+  g2o::EdgeSE3* edge = add_se3_edge(key1->node, key2->node, relative_pose, inf);
+  edge->setId(edge_id_gen++);
+
+  if(robust_kernel != "NONE") {
+    add_robust_kernel(edge, robust_kernel, robust_kernel_delta);
+  }
+
+  return edge;
+}
+
+g2o::EdgeSE3* InteractiveGraph::add_edge(const KeyFrame::Ptr& key1, const KeyFrame::Ptr& key2, const Eigen::Isometry3d& relative_pose, 
+  const double transInf, const double rotInf, const std::string& robust_kernel, double robust_kernel_delta)
+{
+  Eigen::MatrixXd inf = Eigen::MatrixXd::Identity(6, 6);
+  inf.topLeftCorner(3, 3).array() *= transInf;
+  inf.bottomRightCorner(3, 3).array() *= rotInf;
+
   g2o::EdgeSE3* edge = add_se3_edge(key1->node, key2->node, relative_pose, inf);
   edge->setId(edge_id_gen++);
 
@@ -493,6 +542,24 @@ void InteractiveGraph::dump(const std::string& directory, guik::ProgressInterfac
     std::stringstream sst;
     sst << boost::format("%s/%06d") % directory % (keyframe_id++);
     keyframe.second->save(sst.str());
+  }
+
+  progress.set_text("saving gps vertices");
+
+  std::ofstream gpsIdsStream;
+  gpsIdsStream.open(directory + "/gps_vertices.txt");
+
+  if (gpsIdsStream.is_open())
+  {
+    for (auto &[key, value] : gpsVertices)
+    {
+      if (value)
+      {
+        gpsIdsStream << key << "\n";
+      }
+    }
+      
+    gpsIdsStream.close();
   }
 
   std::ofstream ofs(directory + "/special_nodes.csv");

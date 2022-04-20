@@ -12,10 +12,10 @@ ProjectionControl::ProjectionControl(const Eigen::Vector2i& size)
 : show_window(false),
 size(size),
 projection_mode(0),
-fovy(30.0f),
+fovy(60.0f),
 width(10.0f),
 near(1.0f),
-far(1000.0f)
+far(5000.0f)
 {}
 
 ProjectionControl::~ProjectionControl() {}

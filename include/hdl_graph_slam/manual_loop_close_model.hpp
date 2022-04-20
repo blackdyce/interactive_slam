@@ -46,6 +46,9 @@ private:
   std::shared_ptr<InteractiveGraphView>& graph;
 
   double fitness_score;
+  float inf_pos;
+  float inf_rot;
+
   KeyFrameView::Ptr begin_keyframe;
   KeyFrameView::Ptr end_keyframe;
 

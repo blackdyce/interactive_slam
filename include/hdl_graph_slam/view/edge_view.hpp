@@ -24,14 +24,18 @@ public:
 
   virtual void context_menu(bool& do_delete);
 
-private:
-  EdgeView();
+  void set_color(Eigen::Vector4f value) { color = value; };
+
+public:
+  g2o::HyperGraph::Edge* edge;
 
 protected:
   LineBuffer& line_buffer;
 
-public:
-  g2o::HyperGraph::Edge* edge;
+  Eigen::Vector4f color;
+
+private:
+  EdgeView();
 };
 
 }  // namespace hdl_graph_slam

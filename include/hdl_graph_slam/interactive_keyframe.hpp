@@ -26,6 +26,7 @@ public:
 
   boost::any kdtree_;
   pcl::PointCloud<pcl::Normal>::Ptr normals_;
+  Eigen::Vector4f color;
 };
 
 }

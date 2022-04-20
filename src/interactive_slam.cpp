@@ -16,6 +16,7 @@
 #include <hdl_graph_slam/plane_alignment_modal.hpp>
 #include <hdl_graph_slam/manual_loop_close_model.hpp>
 #include <hdl_graph_slam/edge_refinement_window.hpp>
+#include <hdl_graph_slam/information_update_window.hpp>
 #include <hdl_graph_slam/automatic_loop_close_window.hpp>
 #include <hdl_graph_slam/view/interactive_graph_view.hpp>
 
@@ -24,6 +25,7 @@
 namespace hdl_graph_slam {
 
 class InteractiveSLAMApplication : public guik::Application {
+
 public:
   InteractiveSLAMApplication() : Application() {}
   ~InteractiveSLAMApplication() {}
@@ -68,6 +70,7 @@ public:
     manual_loop_close_modal.reset(new ManualLoopCloseModal(graph, data_directory));
     automatic_loop_close_window.reset(new AutomaticLoopCloseWindow(graph));
     edge_refinement_window.reset(new EdgeRefinementWindow(graph));
+    information_update_window.reset(new InformationUpdateWindow(graph));
 
     return true;
   }
@@ -131,6 +134,7 @@ public:
     plane_detection_window->draw_ui();
     automatic_loop_close_window->draw_ui();
     edge_refinement_window->draw_ui();
+    information_update_window->draw_ui();
 
     draw_flags_config();
     context_menu();
@@ -169,6 +173,7 @@ public:
       manual_loop_close_modal->draw_gl(*main_canvas->shader);
       automatic_loop_close_window->draw_gl(*main_canvas->shader);
       edge_refinement_window->draw_gl(*main_canvas->shader);
+      information_update_window->draw_gl(*main_canvas->shader);
 
       // flush to the screen
       main_canvas->unbind();
@@ -239,6 +244,7 @@ private:
     bool merge_map_dialog = false;
     bool save_map_dialog = false;
     bool export_map_dialog = false;
+    bool save_current_map = false;
     if(ImGui::BeginMenu("File")) {
       if(ImGui::BeginMenu("Open")) {
         if(ImGui::MenuItem("New map")) {
@@ -260,6 +266,10 @@ private:
         ImGui::EndMenu();
       }
 
+      if(ImGui::MenuItem("Save current map")) {
+        save_current_map = true;
+      }
+
       if(ImGui::MenuItem("Close Map")) {
         close_map_data();
       }
@@ -276,6 +286,7 @@ private:
     merge_map_data(merge_map_dialog);
     save_map_data(save_map_dialog);
     export_pointcloud(export_map_dialog);
+    save_current_map_data(save_current_map, this->input_graph_filename);
 
     /*** View menu ***/
     if(ImGui::BeginMenu("View")) {
@@ -309,6 +320,11 @@ private:
       if(ImGui::MenuItem("Edge refinement")) {
         clear_selections();
         edge_refinement_window->show();
+      }
+
+      if(ImGui::MenuItem("Update information matrices")) {
+        clear_selections();
+        information_update_window->show();
       }
 
       if(ImGui::MenuItem("Optimize")) {
@@ -350,6 +366,7 @@ private:
     edge_refinement_window->close();
     plane_detection_window->close();
     plane_alignment_modal->close();
+    information_update_window->close();
   }
 
   /**
@@ -398,7 +415,8 @@ private:
       }
     }
 
-    std::string input_graph_filename = result;
+    this->input_graph_filename = result;
+    std::cout << "Load input_graph_filename = " << input_graph_filename << std::endl;
 
     // open the progress modal and load the graph in a background thread
     progress->open<std::shared_ptr<InteractiveGraphView>>("graph load", [=](guik::ProgressInterface& p) {
@@ -496,6 +514,9 @@ private:
       return;
     }
 
+    this->input_graph_filename = result;
+    std::cout << "Save input_graph_filename = " << input_graph_filename << std::endl;
+
     clear_selections();
     progress->open<bool>("graph save", [=](guik::ProgressInterface& p) {
       graph->dump(result, p);
@@ -505,6 +526,35 @@ private:
 
       return true;
     });
+  }
+
+  void save_current_map_data(bool save_map_dialog, const std::string &path) {
+    if(progress->run("current graph save")) {
+      bool result = progress->result<bool>();
+      if(!result) {
+        pfd::message message("Error", "failed to save graph data", pfd::choice::ok);
+        while(!message.ready()) {
+          usleep(100);
+        }
+        return;
+      }
+    }
+
+    if(!save_map_dialog) {
+      return;
+    }
+
+    clear_selections();
+    auto path1 = path;
+    progress->open<bool>("current graph save", [=](guik::ProgressInterface& p) {
+      graph->dump(path1, p);
+
+      p.set_text("done");
+      usleep(500000);
+
+      return true;
+    });
+    std::cout << "3 \n";
   }
 
   /**
@@ -733,6 +783,9 @@ private:
   std::unique_ptr<ManualLoopCloseModal> manual_loop_close_modal;
   std::unique_ptr<AutomaticLoopCloseWindow> automatic_loop_close_window;
   std::unique_ptr<EdgeRefinementWindow> edge_refinement_window;
+  std::unique_ptr<InformationUpdateWindow> information_update_window;
+  
+  std::string input_graph_filename = "";
 };
 
 }  // namespace hdl_graph_slam

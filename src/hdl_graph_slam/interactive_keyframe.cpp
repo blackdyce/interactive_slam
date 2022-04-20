@@ -18,7 +18,6 @@ InteractiveKeyFrame::InteractiveKeyFrame(const std::string& directory, g2o::Hype
 }
 
 InteractiveKeyFrame::~InteractiveKeyFrame() {
-
 }
 
 std::vector<int> InteractiveKeyFrame::neighbors(const Eigen::Vector3f& pt, double radius) {

@@ -10,7 +10,9 @@
 
 namespace hdl_graph_slam {
 
-RegistrationMethods::RegistrationMethods() : registration_method(1), registration_resolution(2.0f), transformation_epsilon(1e-4), max_iterations(64), registration_methods({"ICP", "GICP", "NDT", "GICP_OMP", "NDT_OMP"}) {}
+RegistrationMethods::RegistrationMethods() : registration_method(1), 
+registration_resolution(2.0f), transformation_epsilon(1e-4), max_iterations(64), 
+registration_methods({"ICP", "GICP", "NDT", "GICP_OMP", "NDT_OMP"}) {}
 
 RegistrationMethods::~RegistrationMethods() {}
 

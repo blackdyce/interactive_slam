@@ -125,6 +125,7 @@ add_executable(interactive_slam
   src/hdl_graph_slam/version_modal.cpp
   src/hdl_graph_slam/graph_edit_window.cpp
   src/hdl_graph_slam/edge_refinement_window.cpp
+  src/hdl_graph_slam/information_update_window.cpp
   src/hdl_graph_slam/plane_detection_window.cpp
   src/hdl_graph_slam/plane_alignment_modal.cpp
   src/hdl_graph_slam/manual_loop_close_modal.cpp

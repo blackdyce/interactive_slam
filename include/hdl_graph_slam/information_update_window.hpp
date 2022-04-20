@@ -1,5 +1,4 @@
-#ifndef EDGE_REFINEMENT_WINDOW_HPP
-#define EDGE_REFINEMENT_WINDOW_HPP
+#pragma once
 
 #include <mutex>
 #include <atomic>
@@ -21,12 +20,12 @@ class EdgeSE3;
 
 namespace hdl_graph_slam {
 
-class EdgeRefinementWindow {
+class InformationUpdateWindow {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  EdgeRefinementWindow(std::shared_ptr<InteractiveGraphView>& graph);
-  ~EdgeRefinementWindow();
+  InformationUpdateWindow(std::shared_ptr<InteractiveGraphView>& graph);
+  ~InformationUpdateWindow();
 
   void draw_ui();
 
@@ -40,6 +39,7 @@ public:
 
 private:
   void apply_robust_kernel();
+  void apply_information();
 
   void refinement();
   void refinement_task();
@@ -47,13 +47,18 @@ private:
 private:
   bool show_window;
   std::shared_ptr<InteractiveGraphView>& graph;
+  std::vector<EdgeInfo> edges;
+
+  int apply_method; // all, odom, gps
+
+  float position_inf;
+  float rotation_inf;
 
   std::mt19937 mt;
   std::atomic_bool running;
   std::thread refinement_thread;
 
   std::mutex edges_mutex;
-  std::vector<EdgeInfo> edges;
   g2o::EdgeSE3* inspected_edge;
 
   RegistrationMethods registration_method;
@@ -64,5 +69,3 @@ private:
 };
 
 }  // namespace hdl_graph_slam
-
-#endif

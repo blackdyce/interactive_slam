@@ -20,7 +20,7 @@ public:
   {
     keyframe = kf;
 
-    std::cout << kf->id() << " : ";
+    // std::cout << kf->id() << " : ";
     pointcloud_buffer.reset(new glk::PointCloudBuffer(kf->cloud));
   }
 
@@ -42,7 +42,7 @@ public:
     }
 
     shader.set_uniform("color_mode", 1);
-    shader.set_uniform("material_color", Eigen::Vector4f(1.0f, 0.0f, 0.0f, 1.0f));
+    shader.set_uniform("material_color", color);
     shader.set_uniform("info_values", Eigen::Vector4i(VERTEX | KEYFRAME, kf->id(), 0, 0));
 
     shader.set_uniform("apply_keyframe_scale", true);

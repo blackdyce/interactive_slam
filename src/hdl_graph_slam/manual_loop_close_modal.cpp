@@ -11,9 +11,14 @@
 
 namespace hdl_graph_slam {
 
+  static const int WINDOW_WIDTH = 720;
+  static const int WINDOW_HEIGHT = 640;
+
 ManualLoopCloseModal::ManualLoopCloseModal(std::shared_ptr<InteractiveGraphView>& graph, const std::string& data_directory)
     : graph(graph),
       fitness_score(0),
+      inf_pos(-1),
+      inf_rot(-1),
       global_registration_method(0),
       fpfh_normal_estimation_radius(0.25f),
       fpfh_search_radius(0.5f),
@@ -75,13 +80,13 @@ bool ManualLoopCloseModal::run() {
     } else {
       // create OpenGL canvas
       ImGuiWindowFlags flags = ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNavFocus;
-      ImGui::BeginChild("canvas", ImVec2(512, 512), false, flags);
+      ImGui::BeginChild("canvas", ImVec2(WINDOW_WIDTH, WINDOW_HEIGHT), false, flags);
       if (ImGui::IsWindowFocused()) {
         canvas->mouse_control();
       }
 
       draw_canvas();
-      ImGui::Image((void*)canvas->frame_buffer->color().id(), ImVec2(512, 512), ImVec2(0, 1), ImVec2(1, 0));
+      ImGui::Image((void*)canvas->frame_buffer->color().id(), ImVec2(WINDOW_WIDTH, WINDOW_HEIGHT), ImVec2(0, 1), ImVec2(1, 0));
       ImGui::EndChild();
 
       ImGui::PushItemWidth(400);
@@ -146,7 +151,19 @@ bool ManualLoopCloseModal::run() {
         update_fitness_score();
       }
 
+      ImGui::Text("Translation inf.: ");
       ImGui::SameLine();
+      ImGui::PushItemWidth(200);
+      if (ImGui::DragFloat("##InfPos", &inf_pos, 5.0f, -1.0f, 1000000.0f)) {
+      }
+
+      ImGui::Text("Rotation inf.: ");
+      ImGui::SameLine();
+      ImGui::PushItemWidth(200);
+      if (ImGui::DragFloat("##InfRot", &inf_rot, 5.0f, -1.0f, 1000000.0f)) {
+      }
+
+      // ImGui::SameLine();
       if (ImGui::Button("Reset")) {
         end_keyframe_pose = end_keyframe_pose_init;
         update_fitness_score();
@@ -181,7 +198,12 @@ bool ManualLoopCloseModal::run() {
         }
 
         if(!update_existing) {
-          graph->add_edge(begin_keyframe->lock(), end_keyframe->lock(), relative, robust_kernel.type(), robust_kernel.delta());
+          if (inf_pos >= 0 && inf_rot >= 0) {
+           graph->add_edge(begin_keyframe->lock(), end_keyframe->lock(), relative, inf_pos, inf_rot, robust_kernel.type(), robust_kernel.delta());
+          }
+          else {
+            graph->add_edge(begin_keyframe->lock(), end_keyframe->lock(), relative, robust_kernel.type(), robust_kernel.delta());
+          }
         }
         graph->optimize();
 

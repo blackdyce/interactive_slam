@@ -29,7 +29,10 @@ EdgeView::Ptr EdgeView::create(g2o::HyperGraph::Edge* edge, LineBuffer& line_buf
   return nullptr;
 }
 
-EdgeView::EdgeView(g2o::HyperGraph::Edge* edge, LineBuffer& line_buffer) : edge(edge), line_buffer(line_buffer) {}
+EdgeView::EdgeView(g2o::HyperGraph::Edge* edge, LineBuffer& line_buffer) 
+  : edge(edge)
+  , line_buffer(line_buffer)
+  , color(1, 0, 0, 1) {}
 
 EdgeView::~EdgeView() {}
 

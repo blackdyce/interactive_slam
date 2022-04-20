@@ -39,7 +39,10 @@ public:
 
   long anchor_node_id() const;
 
-  g2o::EdgeSE3* add_edge(const KeyFrame::Ptr& key1, const KeyFrame::Ptr& key2, const Eigen::Isometry3d& relative_pose, const std::string& robust_kernel = "NONE", double robust_kernel_delta = 0.1);
+  g2o::EdgeSE3* add_edge(const KeyFrame::Ptr& key1, const KeyFrame::Ptr& key2, const Eigen::Isometry3d& relative_pose, 
+    const std::string& robust_kernel = "NONE", double robust_kernel_delta = 0.1);
+  g2o::EdgeSE3* add_edge(const KeyFrame::Ptr& key1, const KeyFrame::Ptr& key2, const Eigen::Isometry3d& relative_pose, 
+    const double transInf, const double rotInf, const std::string& robust_kernel = "NONE", double robust_kernel_delta = 0.1);
 
   g2o::VertexPlane* add_plane(const Eigen::Vector4d& coeffs);
   g2o::EdgeSE3Plane* add_edge(const KeyFrame::Ptr& v_se3, g2o::VertexPlane* v_plane, const Eigen::Vector4d& coeffs, const Eigen::MatrixXd& information, const std::string& robust_kernel = "NONE", double robust_kernel_delta = 0.1);
@@ -94,6 +97,8 @@ public:
 
   std::unordered_map<long, InteractiveKeyFrame::Ptr> keyframes;
   std::unique_ptr<InformationMatrixCalculator> inf_calclator;
+
+  std::unordered_map<long, bool> gpsVertices;
 };
 
 }  // namespace hdl_graph_slam

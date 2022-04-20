@@ -22,11 +22,15 @@ public:
 
   virtual void context_menu();
 
+  void set_color(Eigen::Vector4f value) { color = value; };
+
 private:
   VertexView();
 
 protected:
   g2o::HyperGraph::Vertex* vertex;
+
+  Eigen::Vector4f color;
 };
 
 }  // namespace hdl_graph_slam
