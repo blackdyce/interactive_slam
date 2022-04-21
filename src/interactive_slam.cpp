@@ -257,6 +257,9 @@ private:
       }
 
       if(ImGui::BeginMenu("Save")) {
+        if(ImGui::MenuItem("Save current map")) {
+          save_current_map = true;
+        }
         if(ImGui::MenuItem("Save map data")) {
           save_map_dialog = true;
         }
@@ -266,12 +269,8 @@ private:
         ImGui::EndMenu();
       }
 
-      if(ImGui::MenuItem("Save current map")) {
-        save_current_map = true;
-      }
-
       if(ImGui::MenuItem("Close Map")) {
-        close_map_data();
+        close_map_data(this->input_graph_filename);
       }
 
       if(ImGui::MenuItem("Quit")) {
@@ -285,8 +284,8 @@ private:
     open_map_data(open_map_dialog);
     merge_map_data(merge_map_dialog);
     save_map_data(save_map_dialog);
-    export_pointcloud(export_map_dialog);
     save_current_map_data(save_current_map, this->input_graph_filename);
+    export_pointcloud(export_map_dialog);
 
     /*** View menu ***/
     if(ImGui::BeginMenu("View")) {
@@ -453,6 +452,15 @@ private:
     if(!open_dialog) {
       return;
     }
+
+    if(graph->num_vertices() == 0) {
+      pfd::message dialog("Error", "The current graph is empty!!");
+      while(!dialog.ready()) {
+        usleep(100);
+      }
+      return;
+    }
+
     pfd::select_folder dialog("choose graph directory");
     while(!dialog.ready()) {
       usleep(100);
@@ -460,14 +468,6 @@ private:
 
     std::string result = dialog.result();
     if(result.empty()) {
-      return;
-    }
-
-    if(graph->num_vertices() == 0) {
-      pfd::message dialog("Error", "The current graph is empty!!");
-      while(!dialog.ready()) {
-        usleep(100);
-      }
       return;
     }
 
@@ -595,7 +595,7 @@ private:
   /**
    * @brief close map data
    */
-  void close_map_data() {
+  void close_map_data(std::string& path) {
     std::unique_ptr<pfd::message> dialog(new pfd::message("confirm", "Do you want to close the map file?"));
     while(!dialog->ready()) {
       usleep(100);
@@ -604,6 +604,8 @@ private:
     if(dialog->result() != pfd::button::ok) {
       return;
     }
+
+    path.clear();
 
     clear_selections();
     graph.reset(new InteractiveGraphView());

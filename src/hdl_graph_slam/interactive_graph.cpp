@@ -92,6 +92,7 @@ bool InteractiveGraph::load_map_data(const std::string& directory, guik::Progres
 
 bool InteractiveGraph::merge_map_data(InteractiveGraph& graph_, const InteractiveKeyFrame::Ptr& key1, 
   const InteractiveKeyFrame::Ptr& key2, const Eigen::Isometry3d& relative_pose) {
+
   long max_vertex_id = 0;
   long max_edge_id = 0;
 
