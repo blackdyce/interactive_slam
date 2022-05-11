@@ -27,14 +27,10 @@ public:
     return (p1 + p2) * 0.5f;
   }
 
-  virtual void draw(const DrawFlags& flags, glk::GLSLShader& shader) override {
-    if (!flags.draw_edges || !flags.draw_se3_edges) {
-      return;
-    }
+  virtual void add_line_to_line_buffer() {
 
     Eigen::Vector3f p1 = v1->estimate().translation().cast<float>();
     Eigen::Vector3f p2 = v2->estimate().translation().cast<float>();
-
     Eigen::Vector4i info(EDGE, edge->id(), 0, 0);
 
     line_buffer.add_line(p1, p2, color, color, info);

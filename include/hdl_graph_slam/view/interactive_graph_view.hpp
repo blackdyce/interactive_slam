@@ -12,6 +12,7 @@
 #include <hdl_graph_slam/view/keyframe_view.hpp>
 #include <hdl_graph_slam/view/line_buffer.hpp>
 #include <hdl_graph_slam/view/drawable_object.hpp>
+#include <hdl_graph_slam/view/edge_se3_view.hpp>
 
 namespace hdl_graph_slam {
 
@@ -75,10 +76,28 @@ public:
     }
   }
 
-  void draw(const DrawFlags& flags, glk::GLSLShader& shader) {
-    update_view();
+  void update_edge_views()
+  {
+    // TODO: all edge types
+
     line_buffer->clear();
 
+    for (auto edge : edges_view) {
+      auto edgeViewSE3 = dynamic_cast<EdgeSE3View*>(edge.get());
+
+      if (edgeViewSE3 != nullptr)
+      {
+        edgeViewSE3->add_line_to_line_buffer();
+      }
+    }
+  }
+
+  void draw(const DrawFlags& flags, glk::GLSLShader& shader) {
+            
+    update_view();
+
+    const auto startTime = std::chrono::high_resolution_clock::now();
+    
     for (auto& drawable : drawables) {
       if (drawable->available()) {
         drawable->draw(flags, shader);
@@ -86,6 +105,12 @@ public:
     }
 
     line_buffer->draw(shader);
+
+    const auto endTime = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double, std::milli> durationTime = endTime - startTime;
+
+    std::cout << "Speed of block '" << "draw" << "' = " << durationTime.count() << "ms" << std::endl;
   }
 
   void delete_edge(EdgeView::Ptr edge) {

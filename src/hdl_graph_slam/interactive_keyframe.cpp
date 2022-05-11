@@ -12,9 +12,9 @@ namespace hdl_graph_slam {
 InteractiveKeyFrame::InteractiveKeyFrame(const std::string& directory, g2o::HyperGraph* graph)
 : KeyFrame(directory, graph)
 {
-  pcl::search::KdTree<pcl::PointXYZI>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZI>());
-  kdtree->setInputCloud(cloud);
-  kdtree_ = kdtree;
+  // pcl::search::KdTree<pcl::PointXYZI>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZI>());
+  // kdtree->setInputCloud(cloud);
+  // kdtree_ = kdtree;
 }
 
 InteractiveKeyFrame::~InteractiveKeyFrame() {

@@ -15,7 +15,10 @@ namespace hdl_graph_slam {
 
 EdgeView::Ptr EdgeView::create(g2o::HyperGraph::Edge* edge, LineBuffer& line_buffer) {
   if(dynamic_cast<g2o::EdgeSE3*>(edge)) {
-    return std::make_shared<EdgeSE3View>(edge, line_buffer);
+
+    auto result = std::make_shared<EdgeSE3View>(edge, line_buffer); 
+    result->add_line_to_line_buffer();
+    return result;
   }
 
   if(dynamic_cast<g2o::EdgeSE3Plane*>(edge)) {
