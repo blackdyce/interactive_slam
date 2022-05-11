@@ -21,6 +21,20 @@ public:
   InteractiveGraphView() { }
   virtual ~InteractiveGraphView() override {}
 
+  void optimize(int num_iterations = -1) override {
+
+    InteractiveGraph::optimize(num_iterations);
+
+    update_edge_views();
+  }
+
+  void optimize_background(int num_iterations = -1) override {
+
+    InteractiveGraph::optimize_background(num_iterations);
+
+    update_edge_views();
+  }
+
   void init_gl() { line_buffer.reset(new LineBuffer()); }
 
   void update_view() {
@@ -78,6 +92,7 @@ public:
 
   void update_edge_views()
   {
+    std::cout << "Updating graph edge views" << std::endl;
     // TODO: all edge types
 
     line_buffer->clear();
@@ -96,7 +111,7 @@ public:
             
     update_view();
 
-    const auto startTime = std::chrono::high_resolution_clock::now();
+    // const auto startTime = std::chrono::high_resolution_clock::now();
     
     for (auto& drawable : drawables) {
       if (drawable->available()) {
@@ -106,11 +121,11 @@ public:
 
     line_buffer->draw(shader);
 
-    const auto endTime = std::chrono::high_resolution_clock::now();
+    // const auto endTime = std::chrono::high_resolution_clock::now();
 
-    std::chrono::duration<double, std::milli> durationTime = endTime - startTime;
+    // std::chrono::duration<double, std::milli> durationTime = endTime - startTime;
 
-    std::cout << "Speed of block '" << "draw" << "' = " << durationTime.count() << "ms" << std::endl;
+    // std::cout << "Draw time: " << durationTime.count() << "ms" << std::endl;
   }
 
   void delete_edge(EdgeView::Ptr edge) {
@@ -136,6 +151,8 @@ public:
     }
 
     graph->removeEdge(edge->edge);
+
+    update_edge_views();
   }
 
 public:

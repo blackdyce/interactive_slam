@@ -55,8 +55,8 @@ public:
   bool add_edge_prior_normal(long plane_vertex_id, const Eigen::Vector3d& normal, double information_scale, const std::string& robust_kernel = "NONE", double robust_kernel_delta = 0.1);
   bool add_edge_prior_distance(long plane_vertex_id, double distance, double information_scale, const std::string& robust_kernel = "NONE", double robust_kernel_delta = 0.1);
 
-  void optimize(int num_iterations = -1);
-  void optimize_background(int num_iterations = -1);
+  virtual void optimize(int num_iterations = -1);
+  virtual void optimize_background(int num_iterations = -1);
 
   std::string graph_statistics(bool update=false);
   std::string optimization_messages() const;
