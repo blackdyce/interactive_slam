@@ -90,8 +90,8 @@ RegionGrowingResult::Ptr PlaneDetectionWindow::region_growing(guik::ProgressInte
   progress.set_text("normal estimation");
   progress.increment();
   pcl::PointCloud<pcl::Normal>::Ptr accumulated_normals(new pcl::PointCloud<pcl::Normal>());
-  pcl::NormalEstimationOMP<pcl::PointXYZI, pcl::Normal> ne;
 
+  pcl::NormalEstimationOMP<pcl::PointXYZI, pcl::Normal> ne;
   pcl::search::KdTree<pcl::PointXYZI>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZI>());
   ne.setInputCloud(accumulated_points);
   ne.setSearchMethod(tree);
@@ -267,7 +267,9 @@ void PlaneDetectionWindow::draw_ui() {
   if (ImGui::Button("Perform")) {
     region_growing_result = nullptr;
     plane_detection_result = nullptr;
-    region_growing_progress_modal.open<RegionGrowingResult::Ptr>("region growing", [this](guik::ProgressInterface& progress) { return region_growing(progress); });
+    region_growing_progress_modal.open<RegionGrowingResult::Ptr>("region growing", [this](guik::ProgressInterface& progress) { 
+        return region_growing(progress);
+      });
   }
   if (region_growing_progress_modal.run("region growing")) {
     region_growing_result = region_growing_progress_modal.result<RegionGrowingResult::Ptr>();

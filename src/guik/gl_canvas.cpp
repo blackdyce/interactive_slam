@@ -25,19 +25,29 @@ namespace guik {
  * @param data_directory
  * @param size
  */
-GLCanvas::GLCanvas(const std::string& data_directory, const Eigen::Vector2i& size) : 
-size(size), point_size(50.0f), keyframe_scale(1.0f), min_z(-15.5f), max_z(15.0f), z_clipping(false) {
+GLCanvas::GLCanvas(const std::string& data_directory, const Eigen::Vector2i& size) 
+  : size(size)
+  , point_size(50.0f)
+  , keyframe_scale(0.35f)
+  , min_z(-15.5f)
+  , max_z(15.0f)
+  , z_clipping(false) {
+  
   frame_buffer.reset(new glk::FrameBuffer(size));
   frame_buffer->add_color_buffer(GL_RGBA32I, GL_RGBA_INTEGER, GL_INT);
 
+  std::cout << "init GLCanvas: " << data_directory << std::endl;
+
   shader.reset(new glk::GLSLShader());
-  if (!shader->init(data_directory + "/shader/rainbow")) {
+  if (!shader->init(data_directory + "/shader/rainbow", false)) {
+  
+    std::cout << "init shader error: " << data_directory << std::endl;
+
     shader.reset();
     return;
   }
 
   shader->use();
-
   camera_control.reset(new guik::ArcCameraControl());
   projection_control.reset(new guik::ProjectionControl(size));
   texture_renderer.reset(new glk::TextureRenderer(data_directory));
@@ -87,10 +97,13 @@ void GLCanvas::bind(bool clear_buffers) {
   Eigen::Matrix4f view_matrix = camera_control->view_matrix();
   Eigen::Matrix4f projection_matrix = projection_control->projection_matrix();
 
+  view_matrix_glob = view_matrix;
+
   shader->set_uniform("view_matrix", view_matrix);
   shader->set_uniform("projection_matrix", projection_matrix);
   shader->set_uniform("z_clipping", z_clipping ? 1 : 0);
   shader->set_uniform("z_range", Eigen::Vector2f(min_z, max_z));
+
 
   shader->set_uniform("color_mode", 0);
   shader->set_uniform("point_scale", 1.0f);
@@ -115,7 +128,9 @@ void GLCanvas::unbind() {
  * @brief
  *
  */
-void GLCanvas::render_to_screen(int color_buffer_id) { texture_renderer->draw(frame_buffer->color(color_buffer_id).id()); }
+void GLCanvas::render_to_screen(int color_buffer_id) { 
+  texture_renderer->draw(frame_buffer->color(color_buffer_id).id()); 
+  }
 
 /**
  * @brief

@@ -13,16 +13,32 @@
 
 namespace glk {
 
-bool GLSLShader::init(const std::string& shader_path) {
+bool GLSLShader::init(const std::string& shader_path, bool useGeomShader1) {
+
+  name = shader_path;
+  useGeomShader = useGeomShader1;
+
+  std::cout << "init shader: " << shader_path << std::endl;
+
   GLuint vertex_shader = read_shader_from_file(shader_path + ".vert", GL_VERTEX_SHADER);
+
+  GLuint geometry_shader;
+  
+  if (useGeomShader)
+    geometry_shader = read_shader_from_file(shader_path + ".geom", GL_GEOMETRY_SHADER);
+  
   GLuint fragment_shader = read_shader_from_file(shader_path + ".frag", GL_FRAGMENT_SHADER);
 
   shader_program = glCreateProgram();
   glAttachShader(shader_program, vertex_shader);
+  if (useGeomShader)
+    glAttachShader(shader_program, geometry_shader);
   glAttachShader(shader_program, fragment_shader);
   glLinkProgram(shader_program);
 
   glDeleteShader(vertex_shader);
+  if (useGeomShader)
+    glDeleteShader(geometry_shader);
   glDeleteShader(fragment_shader);
 
   GLint result = GL_FALSE;
@@ -30,6 +46,7 @@ bool GLSLShader::init(const std::string& shader_path) {
 
   glGetProgramiv(shader_program, GL_LINK_STATUS, &result);
   glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &info_log_length);
+
   std::vector<char> error_message(info_log_length);
   glGetProgramInfoLog(shader_program, info_log_length, nullptr, error_message.data());
 
@@ -101,6 +118,8 @@ GLuint GLSLShader::read_shader_from_file(const std::string& filename, GLuint sha
     std::cerr << "error : failed to compile shader " << filename << std::endl;
     std::cerr << std::string(error_message.begin(), error_message.end()) << std::endl;
   }
+
+  std::cerr << "filename: " << filename << ", shader_id: " << shader_id << std::endl;
 
   return shader_id;
 }

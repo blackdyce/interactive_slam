@@ -405,7 +405,7 @@ public:
    * @param glsl_version    glsl version
    * @return if successfully initialized
    */
-  bool init(const char* window_name, const Eigen::Vector2i& size, const char* glsl_version = "#version 330") override {
+  bool init(const char* window_name, const Eigen::Vector2i& size, const char* glsl_version = "#version 460") override {
     if(!Application::init(window_name, size, glsl_version)) {
       return false;
     }

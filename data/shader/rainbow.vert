@@ -1,4 +1,4 @@
-#version 330
+#version 460
 uniform float point_size;
 uniform float point_scale;
 uniform bool apply_keyframe_scale;
@@ -54,7 +54,22 @@ void main() {
         world_position = model_matrix * vec4(vert_position, 1.0);
     }
     frag_world_position = world_position.xyz;
-    gl_Position = projection_matrix * view_matrix * world_position;
+    vec4 view_position = view_matrix * world_position;
+
+    // if (sqrt(view_position.z * view_position.z) > 500)
+    // {
+    //     int x1 = int(view_position.x);
+    //     int y1 = int(view_position.y);
+    //     int z1 = int(view_position.z);
+
+    //     if ((x1 % 2 == 0 && y1 % 2 == 0 && z1 % 2 == 0))
+    //     {
+    //         gl_Position = vec4(999999, 999999, 999999, 1);
+    //         return;
+    //     }
+    // }
+
+    gl_Position = projection_matrix * view_position;
 
     frag_info = info_values;
     if(color_mode == 0) {

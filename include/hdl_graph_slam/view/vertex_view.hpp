@@ -29,7 +29,6 @@ private:
 
 protected:
   g2o::HyperGraph::Vertex* vertex;
-
   Eigen::Vector4f color;
 };
 

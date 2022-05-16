@@ -23,10 +23,11 @@ public:
 public:
   Eigen::Vector3f min_pt;
   Eigen::Vector3f max_pt;
+  Eigen::Vector4f color;
 
+private:
   boost::any kdtree_;
   pcl::PointCloud<pcl::Normal>::Ptr normals_;
-  Eigen::Vector4f color;
 };
 
 }

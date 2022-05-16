@@ -21,10 +21,15 @@ public:
 
     void draw(glk::GLSLShader& shader);
 
+    void set_stride_scale(const int value){
+        stride_scale = value;
+    }
+
 private:
     GLuint vao;
     GLuint vbo;
     int stride;
+    int stride_scale;
     int num_points;
 };
 

@@ -18,13 +18,16 @@ class GLSLShader {
 public:
   GLSLShader() {}
 
+  std::string name;
+  bool useGeomShader;
+
   /**
    * @brief load GLSL shader from files
    *
    * @param shader_path  "shader_path".vert and "shader_path".frag will be loaded
    * @return             if the shader is successfully loaded
    */
-  bool init(const std::string& shader_path);
+  bool init(const std::string& shader_path, bool useGeomShader);
 
   /**
    * @brief bind the shader

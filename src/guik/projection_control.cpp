@@ -15,7 +15,7 @@ projection_mode(0),
 fovy(60.0f),
 width(10.0f),
 near(1.0f),
-far(5000.0f)
+far(50000.0f)
 {}
 
 ProjectionControl::~ProjectionControl() {}

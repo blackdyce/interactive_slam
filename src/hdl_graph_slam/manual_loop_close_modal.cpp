@@ -5,7 +5,6 @@
 
 #include <pcl/features/fpfh_omp.h>
 #include <pcl/features/normal_3d_omp.h>
-#include <pcl/search/impl/kdtree.hpp>
 
 #include <hdl_graph_slam/information_matrix_calculator.hpp>
 
@@ -51,10 +50,14 @@ bool ManualLoopCloseModal::set_end_keyframe(int keyframe_id) {
     return false;
   }
 
+  std::cout << "set_end_keyframe 1\n";
+
   end_keyframe_pose = found->second->estimate();
   end_keyframe_pose_init = end_keyframe_pose;
   end_keyframe = graph->keyframes_view_map[found->second];
+  std::cout << "set_end_keyframe 2\n";
   update_fitness_score();
+  std::cout << "set_end_keyframe 3\n";
   return true;
 }
 

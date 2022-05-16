@@ -38,7 +38,7 @@ public:
    * @return true
    * @return false
    */
-  bool init(const char* window_name, const Eigen::Vector2i& size, const char* glsl_version = "#version 330") override {
+  bool init(const char* window_name, const Eigen::Vector2i& size, const char* glsl_version = "#version 460") override {
     if(!Application::init(window_name, size, glsl_version)) {
       return false;
     }
@@ -165,7 +165,7 @@ public:
       grid.draw(*main_canvas->shader);
 
       // draw pose graph
-      graph->draw(draw_flags, *main_canvas->shader);
+      graph->draw(draw_flags, *main_canvas->shader, main_canvas->view_matrix_glob);
 
       // let the windows draw something on the main canvas
       plane_detection_window->draw_gl(*main_canvas->shader);

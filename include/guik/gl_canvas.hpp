@@ -47,6 +47,8 @@ public:
   std::unique_ptr<guik::CameraControl> camera_control;
   std::unique_ptr<guik::ProjectionControl> projection_control;
 
+  Eigen::Matrix4f view_matrix_glob;
+
 private:
   float point_size;
   float keyframe_scale;

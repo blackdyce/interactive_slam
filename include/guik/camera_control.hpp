@@ -47,6 +47,10 @@ public:
 
   Eigen::Quaternionf rotation() const;
   Eigen::Matrix4f view_matrix() const override;
+  double get_distance() const 
+  {
+    return distance;
+  }
 
 private:
   Eigen::Vector3f center;

@@ -107,30 +107,36 @@ public:
     }
   }
 
-  void draw(const DrawFlags& flags, glk::GLSLShader& shader) {
+  void draw(const DrawFlags& flags, glk::GLSLShader& shader, const Eigen::Matrix4f &view_mat) {
             
     update_view();
 
-    // const auto startTime = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
     
     for (auto& drawable : drawables) {
       if (drawable->available()) {
+
+        auto keyframeView = dynamic_cast<KeyFrameView*>(drawable.get());
+
+        if (keyframeView != nullptr)
+        {
+          keyframeView->set_view_mat(view_mat);
+        }
+          
         drawable->draw(flags, shader);
       }
     }
 
     line_buffer->draw(shader);
 
-    // const auto endTime = std::chrono::high_resolution_clock::now();
+    const auto endTime = std::chrono::high_resolution_clock::now();
 
-    // std::chrono::duration<double, std::milli> durationTime = endTime - startTime;
+    std::chrono::duration<double, std::milli> durationTime = endTime - startTime;
 
     // std::cout << "Draw time: " << durationTime.count() << "ms" << std::endl;
   }
 
   void delete_edge(EdgeView::Ptr edge) {
-    std::cout << "delete edge " << edge->id() << std::endl;
-
     auto found = std::find(edges_view.begin(), edges_view.end(), edge);
     while(found != edges_view.end()) {
       edges_view.erase(found);

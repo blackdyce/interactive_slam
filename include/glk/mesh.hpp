@@ -21,9 +21,11 @@ public:
 
   virtual void draw(glk::GLSLShader& shader) const override;
 
-private:
-  Mesh(const Mesh&);
-  Mesh& operator=(const Mesh&);
+// private:
+  Mesh(Mesh&&) = delete;
+  Mesh(const Mesh&) = delete;
+  Mesh& operator=(Mesh&&) = delete;
+  Mesh& operator=(const Mesh&) = delete;
 
 private:
   int num_vertices;
