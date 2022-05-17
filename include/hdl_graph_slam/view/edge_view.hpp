@@ -24,15 +24,11 @@ public:
 
   virtual void context_menu(bool& do_delete);
 
-  void set_color(Eigen::Vector4f value) { color = value; };
-
 public:
   g2o::HyperGraph::Edge* edge;
 
 protected:
   LineBuffer& line_buffer;
-
-  Eigen::Vector4f color;
 
 private:
   EdgeView();

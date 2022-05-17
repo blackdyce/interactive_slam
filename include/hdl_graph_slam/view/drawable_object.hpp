@@ -1,8 +1,9 @@
-#ifndef HDL_GRAPH_SLAM_DRAWABLE_HPP
-#define HDL_GRAPH_SLAM_DRAWABLE_HPP
+#pragma once
 
 #include <memory>
 #include <glk/glsl_shader.hpp>
+
+#include <Eigen/Core>
 
 namespace hdl_graph_slam {
 
@@ -43,16 +44,19 @@ public:
 
   using Ptr = std::shared_ptr<DrawableObject>;
 
-  DrawableObject() {}
-  virtual ~DrawableObject() {}
+  DrawableObject() : color(1, 0, 0, 1)  {}
+  virtual ~DrawableObject() = default;
 
   virtual bool available() const { return true; }
 
   virtual void draw(const DrawFlags& flags, glk::GLSLShader& shader) {}
 
   virtual void draw(const DrawFlags& flags, glk::GLSLShader& shader, const Eigen::Vector4f& color, const Eigen::Matrix4f& model_matrix) {}
+
+  void set_color(const Eigen::Vector4f &value) { this->color = value; };
+
+protected:
+  Eigen::Vector4f color;
 };
 
 }  // namespace hdl_graph_slam
-
-#endif

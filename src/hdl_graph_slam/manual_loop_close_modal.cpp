@@ -1,4 +1,4 @@
-#include <hdl_graph_slam/manual_loop_close_model.hpp>
+#include <hdl_graph_slam/manual_loop_close_modal.hpp>
 
 #include <g2o/types/slam3d/edge_se3.h>
 #include <pcl/registration/sample_consensus_prerejective.h>
@@ -12,6 +12,9 @@ namespace hdl_graph_slam {
 
   static const int WINDOW_WIDTH = 720;
   static const int WINDOW_HEIGHT = 640;
+
+  const Eigen::Vector4f SELECT_COLOR_1 = {0, 0, 1, 1};
+  const Eigen::Vector4f SELECT_COLOR_2 = {0, 1, 0, 1};
 
 ManualLoopCloseModal::ManualLoopCloseModal(std::shared_ptr<InteractiveGraphView>& graph, const std::string& data_directory)
     : graph(graph),
@@ -34,13 +37,19 @@ ManualLoopCloseModal::ManualLoopCloseModal(std::shared_ptr<InteractiveGraphView>
 ManualLoopCloseModal::~ManualLoopCloseModal() {}
 
 bool ManualLoopCloseModal::set_begin_keyframe(int keyframe_id) {
+
   auto found = graph->keyframes.find(keyframe_id);
   if (found == graph->keyframes.end()) {
     return false;
   }
 
+  if (begin_keyframe != nullptr) {
+    begin_keyframe->set_selected(false);
+  }
+
   begin_keyframe_pose = found->second->estimate();
   begin_keyframe = graph->keyframes_view_map[found->second];
+  begin_keyframe->set_selected(true);
   return true;
 }
 
@@ -50,14 +59,16 @@ bool ManualLoopCloseModal::set_end_keyframe(int keyframe_id) {
     return false;
   }
 
-  std::cout << "set_end_keyframe 1\n";
+  if (end_keyframe != nullptr) {
+    end_keyframe->set_selected(false);
+  }
 
   end_keyframe_pose = found->second->estimate();
   end_keyframe_pose_init = end_keyframe_pose;
   end_keyframe = graph->keyframes_view_map[found->second];
-  std::cout << "set_end_keyframe 2\n";
+  end_keyframe->set_selected(true);
   update_fitness_score();
-  std::cout << "set_end_keyframe 3\n";
+
   return true;
 }
 
@@ -66,6 +77,15 @@ bool ManualLoopCloseModal::has_begin_keyframe() {
 }
 
 void ManualLoopCloseModal::close() {
+
+  if (begin_keyframe != nullptr) {
+    begin_keyframe->set_selected(false);
+  }
+  
+  if (end_keyframe != nullptr) {
+    end_keyframe->set_selected(false);
+  }
+
   begin_keyframe = nullptr;
   end_keyframe = nullptr;
 }
@@ -211,6 +231,8 @@ bool ManualLoopCloseModal::run() {
         graph->optimize();
 
         ImGui::CloseCurrentPopup();
+        begin_keyframe->set_selected(false);
+        end_keyframe->set_selected(false);
         begin_keyframe = nullptr;
         end_keyframe = nullptr;
         close_window = true;
@@ -220,6 +242,8 @@ bool ManualLoopCloseModal::run() {
 
     if (ImGui::Button("Cancel")) {
       ImGui::CloseCurrentPopup();
+      begin_keyframe->set_selected(false);
+      end_keyframe->set_selected(false);
       begin_keyframe = nullptr;
       end_keyframe = nullptr;
       close_window = true;
@@ -377,11 +401,11 @@ void ManualLoopCloseModal::draw_gl(glk::GLSLShader& shader) {
   DrawFlags draw_flags;
   shader.set_uniform("point_scale", 2.0f);
   if (begin_keyframe) {
-    begin_keyframe->draw(draw_flags, shader, Eigen::Vector4f(0.0f, 0.0f, 1.0f, 1.0f), begin_keyframe->lock()->estimate().matrix().cast<float>());
+    begin_keyframe->draw(draw_flags, shader, SELECT_COLOR_1);
   }
 
   if (end_keyframe) {
-    end_keyframe->draw(draw_flags, shader, Eigen::Vector4f(0.0f, 1.0f, 0.0f, 1.0f), end_keyframe->lock()->estimate().matrix().cast<float>());
+    end_keyframe->draw(draw_flags, shader, SELECT_COLOR_2);
   }
 }
 
@@ -398,8 +422,8 @@ void ManualLoopCloseModal::draw_canvas() {
   canvas->shader->set_uniform("point_scale", 2.0f);
 
   Eigen::Isometry3d relative = begin_keyframe_pose.inverse() * end_keyframe_pose;
-  begin_keyframe->draw(draw_flags, *canvas->shader, Eigen::Vector4f(0.0f, 0.0f, 1.0f, 1.0f), Eigen::Matrix4f::Identity());
-  end_keyframe->draw(draw_flags, *canvas->shader, Eigen::Vector4f(0.0f, 1.0f, 0.0f, 1.0f), relative.cast<float>().matrix());
+  begin_keyframe->draw(draw_flags, *canvas->shader, SELECT_COLOR_1, Eigen::Matrix4f::Identity());
+  end_keyframe->draw(draw_flags, *canvas->shader, SELECT_COLOR_2, relative.cast<float>().matrix());
 
   canvas->shader->set_uniform("color_mode", 1);
   canvas->shader->set_uniform("model_matrix", (relative * Eigen::UniformScaling<double>(3.0)).cast<float>().matrix());

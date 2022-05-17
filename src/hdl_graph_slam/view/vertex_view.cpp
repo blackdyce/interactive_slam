@@ -9,7 +9,6 @@ namespace hdl_graph_slam {
 
 VertexView::VertexView(g2o::HyperGraph::Vertex* vertex) 
   : vertex(vertex) 
-  , color(1, 0, 0, 1)
   {}
 
 VertexView::~VertexView() {}

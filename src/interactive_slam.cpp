@@ -14,7 +14,7 @@
 #include <hdl_graph_slam/graph_edit_window.hpp>
 #include <hdl_graph_slam/plane_detection_window.hpp>
 #include <hdl_graph_slam/plane_alignment_modal.hpp>
-#include <hdl_graph_slam/manual_loop_close_model.hpp>
+#include <hdl_graph_slam/manual_loop_close_modal.hpp>
 #include <hdl_graph_slam/edge_refinement_window.hpp>
 #include <hdl_graph_slam/information_update_window.hpp>
 #include <hdl_graph_slam/automatic_loop_close_window.hpp>
